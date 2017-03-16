@@ -106,12 +106,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
       sprintf(str, "str%d.png", i);
       i++;
       cv::imwrite(str,img);
-    */
+    */char str[10];
 
     //cv::split(img,ch);
 
     //get image only the range 0 to 85
     image =  cv_bridge::toCvShare(msg, "bgr8")->image;
+          sprintf(str, "str%d.png", i);
+      i++;
+      cv::imwrite(str,image);
     img2 =  cv_bridge::toCvShare(msg, "bgr8")->image;
    // cv::inRange(image,cv::Scalar(100,100, 100), cv::Scalar(255, 255, 255), image);
 
