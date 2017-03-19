@@ -111,7 +111,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     //cv::split(img,ch);
 
     //get image only the range 0 to 85
-    image =  cv_bridge::toCvShare(msg, "bgr8")->image;
+    image =  cv_bridge::toCvShare(msg, "16UC1")->image;
           sprintf(str, "str%d.png", i);
       i++;
       cv::imwrite(str,image);
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
   cv::namedWindow("view2");
   cv::startWindowThread();
   image_transport::ImageTransport it(nh);
-  image_transport::Subscriber sub = it.subscribe("/app/camera/rgb/image_raw", 1, imageCallback);
+  image_transport::Subscriber sub = it.subscribe("/depth/image_raw", 1, imageCallback);
 
   if (!bol)
   {
