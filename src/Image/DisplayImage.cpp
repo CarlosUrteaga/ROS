@@ -9,6 +9,7 @@ cv::Mat image;
 cv::Mat image3;
 cv::Mat image4;
 cv::Mat img2;
+cv::Mat invSrc;
 bool bol=false;
 int i=0;
 void MyPolygon( cv::Mat img )
@@ -121,6 +122,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
       //cv::imwrite(str,image);
     img2 =  cv_bridge::toCvShare(msg, "32FC1")->image;
     image4 =  cv_bridge::toCvShare(msg, "16UC1")->image;
+
+    //Mat floatMat(640, 480, "CV_32FC1");
+cv::Mat ucharMat, ucharMatScaled;
+//img2.convertTo(ucharMat, "CV_8UC1");
+
+// scale values from 0..1 to 0..255
+img2.convertTo(ucharMatScaled, CV_8UC1, 255, 0); 
    // cv::inRange(image,cv::Scalar(100,100, 100), cv::Scalar(255, 255, 255), image);
 
     //cv::inRange(ch[1],cv::Scalar(0, 100, 0), cv::Scalar(255, 200, 255), ch[1]);
@@ -220,16 +228,21 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     //namedWindow("src",1);imshow("src",output);
     //namedWindow("Display Image", WINDOW_AUTOSIZE );
     //imshow("Display Image", cdst);
-    
-    cv::Mat invSrc =  cv::Scalar::all(255)  -img2 ;
+   
+   //bitwise_and(src2,src2,fin_img,fin_img); 
+     invSrc =  cv::Scalar::all(255)  -img2 ;
+
+   
+	invSrc.convertTo(invSrc, CV_8UC1, 255, 0); 
+//     bitwise_and(img2,img2,invSrc,invSrc);
     //cv::cvtColor(image,image,CV_GRAY2BGR);
 
-    double alpha = 0.5; double beta; double input;
-    beta = ( 1.0 - alpha );
-  cv::addWeighted( image, alpha, falseColorsMap, beta, 0.0, image);
+  //  double alpha = 0.5; double beta; double input;
+  //  beta = ( 1.0 - alpha );
+  //cv::addWeighted( image, alpha, falseColorsMap, beta, 0.0, image);
 
-    cv::imshow("view", image);
-    cv::imshow("view2",falseColorsMap);
+    cv::imshow("view", ucharMatScaled);
+    cv::imshow("view2",invSrc);
     //waitKey(0);
 
 
@@ -364,15 +377,28 @@ CV_AA );
     lambda = cv::getPerspectiveTransform( inputQuad, outputQuad );
     // Apply the Perspective Transform just found to the src image
     cv::warpPerspective(image,output,lambda,output.size() );
+    cv::Mat  fin_img;
+    cv::vector<cv::Mat> channels;
+    cv::vector<cv::Mat> rgbChannels(3);
+    cv::split(invSrc, rgbChannels);
+   /*channels.push_back(
 
+                      (rgbChannels[0] & invSrc) |
+                      (rgbChannels[1] & invSrc) |
+                      (rgbChannels[2] & invSrc) 
+                      );
+  /*
+    cv::merge(channels, fin_img);
+*/
+    //cv::bitwise_and(image3, image3, rgbChannels[0],rgbChannels[0]);
     //namedWindow("src",1);imshow("src",output);
     //namedWindow("Display Image", WINDOW_AUTOSIZE );
     //imshow("Display Image", cdst);
-    cv::imshow("view02", image3);
-    cv::imshow("view22",output);
+    //cv::imshow("view22",rgbChannels[0]);
     //waitKey(0);
 
-
+bitwise_and(image3,image3,invSrc,invSrc);
+    cv::imshow("view02", invSrc);
   }
   catch (cv_bridge::Exception& e)
   {
@@ -387,13 +413,13 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   cv::namedWindow("view");
   cv::namedWindow("view2");
-  //cv::namedWindow("view02");
-  //cv::namedWindow("view22");
+  cv::namedWindow("view02");
+  cv::namedWindow("view22");
   cv::startWindowThread();
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber sub = it.subscribe("/depth/image_raw", 1, imageCallback);
 
-  //image_transport::Subscriber sub2 = it.subscribe("/app/camera/rgb/image_raw", 1, imageCallback2);
+  image_transport::Subscriber sub2 = it.subscribe("/app/camera/rgb/image_raw", 1, imageCallback2);
   if (!bol)
   {
       bol =true;
@@ -408,6 +434,6 @@ int main(int argc, char **argv)
   //cv::waitKey(30);
   cv::destroyWindow("view");
   cv::destroyWindow("view2");
-  //cv::destroyWindow("view02");
-  //cv::destroyWindow("view22");
+  cv::destroyWindow("view02");
+  cv::destroyWindow("view22");
 }
