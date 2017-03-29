@@ -419,7 +419,7 @@ int main(int argc, char **argv)
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber sub = it.subscribe("/depth/image_raw", 1, imageCallback);
 
-  image_transport::Subscriber sub2 = it.subscribe("/app/camera/rgb/image_raw", 1, imageCallback2);
+  image_transport::Subscriber sub2 = it.subscribe("/output", 1, imageCallback2);
   if (!bol)
   {
       bol =true;
