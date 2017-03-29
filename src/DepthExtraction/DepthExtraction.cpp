@@ -21,7 +21,7 @@
 #include <opencv2/core/core.hpp>
 
 cv::Mat image;
-
+int i=0;
 bool bol=false;
 class PointCloudToImage
 {
@@ -73,6 +73,42 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     //waitKey(0);
     cv::vector<cv::Mat> rgbChannels(3);
     cv::split(image, rgbChannels);
+    // Show individual channels
+    cv::Mat  fin_img;
+    cv::vector<cv::Mat> channels;
+    channels.push_back(
+                      (rgbChannels[0]>197  )&(rgbChannels[0]<199)&
+                        (rgbChannels[1]>156)&(rgbChannels[1]<158)&
+                        (rgbChannels[2]>95)&(rgbChannels[2]<97)
+                      );
+    cv::merge(channels, fin_img);
+      fin_img =  cv::Scalar::all(255)  -fin_img ;
+    cv::bitwise_and(image,image,fin_img,fin_img);
+    //namedWindow("road",1);imshow("road", fin_img);
+    cv::imshow("view",fin_img);
+
+    //sprintf(str, "str%d.png", i);
+    //i++;
+    //cv::imwrite(str,fin_img);
+    
+  }
+  catch (cv_bridge::Exception& e)
+  {
+    ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+    bol =false;
+  }
+}
+
+void rgb(const sensor_msgs::ImageConstPtr& msg)
+{
+  try
+  {
+
+    char str[10];
+    image =  cv_bridge::toCvShare(msg, "bgr8")->image;
+    //waitKey(0);
+    cv::vector<cv::Mat> rgbChannels(3);
+    cv::split(image, rgbChannels);
  
     // Show individual channels
     cv::Mat  fin_img;
@@ -83,9 +119,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
                         (rgbChannels[2]>95)&(rgbChannels[2]<97)
                       );
     cv::merge(channels, fin_img);
+      fin_img =  cv::Scalar::all(255)  -fin_img ;
     cv::bitwise_and(image,image,fin_img,fin_img);
     //namedWindow("road",1);imshow("road", fin_img);
-    cv::imshow("view",fin_img);
+    cv::imshow("RGB",fin_img);
 
     
   }
@@ -101,16 +138,19 @@ int main (int argc, char **argv)
 {
 
   cv::namedWindow("view");
+  cv::namedWindow("RGB");
   
   ros::init (argc, argv, "convert_pointcloud_to_image");
   ros::NodeHandle nh;
   cv::startWindowThread();
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber sub = it.subscribe("output", 1, imageCallback);
+  image_transport::Subscriber sub2 = it.subscribe("/app/camera/rgb/image_raw", 1, rgb);
  
 
   PointCloudToImage pci; //this loads up the node
   ros::spin (); //where she stops nobody knows
   cv::destroyWindow("view");
+  cv::destroyWindow("RGB");
   return 0;
 }
