@@ -78,14 +78,14 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     cv::Mat  fin_img;
     cv::vector<cv::Mat> channels;
     channels.push_back(
-                      (rgbChannels[0]<197  )&(rgbChannels[0]>199)&
-                        (rgbChannels[1]<156)&(rgbChannels[1]>158)&
-                        (rgbChannels[2]<95)&(rgbChannels[2]>97)
+                      (rgbChannels[0]>197  )&(rgbChannels[0]<199)&
+                        (rgbChannels[1]>156)&(rgbChannels[1]<158)&
+                        (rgbChannels[2]>95)&(rgbChannels[2]<97)
                       );
     cv::merge(channels, fin_img);
     cv::bitwise_and(image,image,fin_img,fin_img);
     //namedWindow("road",1);imshow("road", fin_img);
-    cv::imshow("view",image);
+    cv::imshow("view",fin_img);
 
     
   }
